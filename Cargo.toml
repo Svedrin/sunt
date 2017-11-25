@@ -1,0 +1,9 @@
+[package]
+name = "sunt"
+version = "0.1.0"
+authors = ["Michael Ziegler <michael.ziegler@proemion.com>"]
+
+[dependencies]
+error-chain = "*"
+mio = "*"
+snmp = { git = "https://github.com/Svedrin/rust-snmp", branch = "feature/response-pdus" }
