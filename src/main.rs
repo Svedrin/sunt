@@ -26,6 +26,7 @@ mod value;
 use value::Value;
 
 mod mib_sys;
+mod mib_disks;
 
 fn run(port: u32, community: &str) -> Result<()> {
     let addr: SocketAddr = format!("[::]:{}", port).parse()
@@ -35,7 +36,8 @@ fn run(port: u32, community: &str) -> Result<()> {
         .chain_err(|| "Could not bind to socket")?;
 
     let mut values: BTreeMap<String, Value> = BTreeMap::new();
-    mib_sys::get_system(&mut values, "1.3.6.1.2.1.1");
+//    mib_sys::get_system(&mut values, "1.3.6.1.2.1.1");
+    mib_disks::get_disks(&mut values, "1.3.6.1.4.1.2021.13.15.1.1");
 
     let mut buf = [0 as u8; 16 * 1024];
     loop {
@@ -64,7 +66,6 @@ fn run(port: u32, community: &str) -> Result<()> {
 
                 let mut vals : Vec<(Vec<u32>, snmp::Value)> = values
                     .iter()
-                    .take(10)
                     .map(|(oid_str, val)| (
                         oid_str
                             .split(".")
