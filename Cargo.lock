@@ -156,7 +156,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "snmp"
 version = "0.2.2"
-source = "git+https://github.com/Svedrin/rust-snmp?branch=feature/response-pdus#f09bf0c9c98e7140496c9bb824743340156c0a17"
+source = "git+https://github.com/Svedrin/rust-snmp?branch=feature/response-pdus#794d7c99e530ea318e3f4cf065a50260f2973910"
 
 [[package]]
 name = "sunt"
@@ -165,6 +165,15 @@ dependencies = [
  "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "mio 0.6.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "snmp 0.2.2 (git+https://github.com/Svedrin/rust-snmp?branch=feature/response-pdus)",
+ "uname 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "uname"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -207,6 +216,7 @@ dependencies = [
 "checksum rustc-demangle 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "aee45432acc62f7b9a108cc054142dac51f979e69e71ddce7d6fc7adf29e817e"
 "checksum slab 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "17b4fcaed89ab08ef143da37bc52adbcc04d4a69014f4c1208d6b51f0c47bc23"
 "checksum snmp 0.2.2 (git+https://github.com/Svedrin/rust-snmp?branch=feature/response-pdus)" = "<none>"
+"checksum uname 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b72f89f0ca32e4db1c04e2a72f5345d59796d4866a1ee0609084569f73683dc8"
 "checksum winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"
 "checksum winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2d315eee3b34aca4797b2da6b13ed88266e6d612562a0c46390af8299fc699bc"
 "checksum ws2_32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
