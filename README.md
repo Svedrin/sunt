@@ -13,6 +13,7 @@ nowadays, stripped to the essentials but adding features where they make sense.
 * hrStorageTable
 * dskTable
 * diskIOTable
+* ifTable
 
 # Notable differences to net-snmpd
 
@@ -24,3 +25,7 @@ nowadays, stripped to the essentials but adding features where they make sense.
 * diskIOTable:
 
     * `dm-*` devices are reported as the actual device, e.g. `vghive/data` or `crypted_home`. 
+
+* ifTable
+
+    * Only Physical interfaces, Bridges and VLAN interfaces are exported (VM interfaces and VPN tunnels are filtered).

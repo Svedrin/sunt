@@ -1,14 +1,15 @@
 use snmp;
 use std::fs::File;
+use std::path::PathBuf;
 use std::io::{BufReader,BufRead};
 
 #[allow(dead_code)]
-pub enum Value {
+pub enum Value<'a> {
     Boolean(bool),
     Null,
     Integer(i64),
     OctetString(String),
-    OctetStr(&'static str),
+    OctetStr(&'a str),
 
     IpAddress([u8;4]),
     Counter32(u32),
@@ -17,7 +18,7 @@ pub enum Value {
     Counter64(u64),
 }
 
-impl Value {
+impl<'a> Value<'a> {
     pub fn as_snmp_value(&self) -> snmp::Value {
         match self {
             &Value::Boolean(bool_)          => snmp::Value::Boolean(bool_),
@@ -34,15 +35,17 @@ impl Value {
     }
 }
 
-pub fn u32_from_file(fpath: &str) -> u32 {
-    String::from_utf8(
+pub fn str_from_file(fpath: &PathBuf) -> Option<String> {
     BufReader::new(File::open(fpath).unwrap())
-            .split(b'.')
-            .next()
-            .unwrap()
-            .unwrap()
-        )
-        .unwrap()
+        .lines()
+        .nth(0)?
+        .ok()
+}
+
+pub fn u32_from_file(fpath: &PathBuf) -> Option<u32> {
+    str_from_file(fpath)?
+        .split(".")
+        .next()?
         .parse::<u32>()
-        .unwrap()
+        .ok()
 }
