@@ -252,52 +252,52 @@ pub fn get_disks(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
             let read_bytes = parts[5].parse::<u64>().unwrap() * 512;
             let wrtn_bytes = parts[6].parse::<u64>().unwrap() * 512;
 
-            values.insert(
+            values.insert( // diskIOIndex
                 OID::from_parts_and_instance(&[base_oid,  "1"], disk_idx),
                 Value::Integer(disk_idx as i64)
             );
-            values.insert(
+            values.insert( // diskIODevice
                 OID::from_parts_and_instance(&[base_oid,  "2"], disk_idx),
                 Value::OctetString(alias.or(Some(device)).unwrap())
             );
             // NRead, NWritten (old sucky 32 bit counters). I hope these conversions are correct :/
-            values.insert(
+            values.insert( // diskIONRead
                 OID::from_parts_and_instance(&[base_oid,  "3"], disk_idx),
                 Value::Counter32((read_bytes & 0xFFFFFFFF) as u32)
             );
-            values.insert(
+            values.insert( // diskIONWritten
                 OID::from_parts_and_instance(&[base_oid,  "4"], disk_idx),
                 Value::Counter32((wrtn_bytes & 0xFFFFFFFF) as u32)
             );
             // reads, writes
-            values.insert(
+            values.insert( // diskIOReads
                 OID::from_parts_and_instance(&[base_oid,  "5"], disk_idx),
                 Value::Counter32(reads)
             );
-            values.insert(
+            values.insert( // diskIOWrites
                 OID::from_parts_and_instance(&[base_oid,  "6"], disk_idx),
                 Value::Counter32(writes)
             );
             // 7, 8: ???
             // diskIOLA1, 5, 15
-            values.insert(
+            values.insert( // diskIOLA1
                 OID::from_parts_and_instance(&[base_oid,  "9"], disk_idx),
                 Value::Integer(0)
             );
-            values.insert(
+            values.insert( // diskIOLA5
                 OID::from_parts_and_instance(&[base_oid, "10"], disk_idx),
                 Value::Integer(0)
             );
-            values.insert(
+            values.insert( // diskIOLA15
                 OID::from_parts_and_instance(&[base_oid, "11"], disk_idx),
                 Value::Integer(0)
             );
             // NReadX, NWrittenX (new shiny 64 bit counters)
-            values.insert(
+            values.insert( // diskIONReadX
                 OID::from_parts_and_instance(&[base_oid, "12"], disk_idx),
                 Value::Counter64(read_bytes)
             );
-            values.insert(
+            values.insert( // diskIONWrittenX
                 OID::from_parts_and_instance(&[base_oid, "13"], disk_idx),
                 Value::Counter64(wrtn_bytes)
             );
