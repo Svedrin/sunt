@@ -1,0 +1,9 @@
+[Unit]
+WantedBy=multi-user.target
+Description=SNMP Agent
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/sunt -p 1161
+StandardOutput=null
+User=nobody
