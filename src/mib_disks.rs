@@ -11,6 +11,25 @@ use libc;
 
 
 /**
+ * device is some path under /dev. Resolve symlinks down to the actual /dev/something.
+ */
+fn resolve_dev_symlinks(input: PathBuf) -> PathBuf {
+    if let Ok(target) = input.read_link() {
+        resolve_dev_symlinks(
+            input.parent()
+                .unwrap()
+                .join(target)
+                .canonicalize()
+                .unwrap()
+        )
+    }
+    else {
+        // Probably not a symlink
+        input
+    }
+}
+
+/**
  * device is a /dev/dm-*. Search /dev/mapper for a more meaningful name.
  */
 fn canonicalize_dm_name(devpath: PathBuf) -> Option<String> {
@@ -33,11 +52,14 @@ fn canonicalize_dm_name(devpath: PathBuf) -> Option<String> {
                                 .splitn(2, "-")
                                 .map(|part| part.replace("--", "-"))
                                 .collect::<Vec<String>>();
-                            return Some(format!("{}/{}", parts[0], parts[1]));
-                        } else {
-                            // Something else, return as-is.
-                            return Some(file_name_string);
+                            let lvpath = format!("{}/{}", parts[0], parts[1]);
+                            // Check if /dev/vg/lv exists
+                            if PathBuf::from("/dev").join(&lvpath).exists() {
+                                return Some(lvpath);
+                            }
                         }
+                        // Something else, return as-is.
+                        return Some(file_name_string);
                     }
                 }
             }
@@ -62,6 +84,7 @@ pub fn get_filesystems(
             // device mountpoint fstype options dump pass
 
             let device = String::from(parts[0]);
+            let devpath = resolve_dev_symlinks(PathBuf::from(&device));
             let mountpoint = String::from(parts[1]);
 
             if !device.starts_with("/dev") {
@@ -86,6 +109,17 @@ pub fn get_filesystems(
 
             let fsstat = fsstat.unwrap();
 
+            let alias =
+                if devpath.to_str().unwrap().starts_with("/dev/dm-") {
+                    // Find a name better suited for dem humans
+                    canonicalize_dm_name(devpath)
+                        .and_then(|name| Some(format!("/dev/{}", name)))
+                }
+                else {
+                    None
+                };
+
+
             // Filter dups (bind mounts, e.g. docker)
             if dups.contains(&fsstat.f_fsid) {
                 continue;
@@ -94,35 +128,89 @@ pub fn get_filesystems(
                 dups.insert(fsstat.f_fsid);
             }
 
-            println!("{}: avail {}, free {}, blox {}, opts {}", mountpoint, fsstat.f_bavail, fsstat.f_bfree, fsstat.f_blocks, fsstat.f_fsid);
             // hrStorageTable
 
-            values.insert(
+            values.insert( // hrStorageIndex
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "1"], disk_idx),
                 Value::Integer(disk_idx as i64)
             );
-            values.insert(
+            values.insert( // hrStorageType
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "2"], disk_idx),
                 Value::Null
             );
-
-            values.insert(
+            values.insert( // hrStorageDescr
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "3"], disk_idx),
-                Value::OctetString(mountpoint)
+                Value::OctetString(mountpoint.to_owned())
             );
-
-            values.insert(
+            values.insert( // hrStorageAllocationUnits
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "4"], disk_idx),
                 Value::Integer(fsstat.f_frsize as i64)
             );
-            values.insert(
+            values.insert( // hrStorageSize
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "5"], disk_idx),
                 Value::Integer(fsstat.f_blocks as i64)
             );
-            values.insert(
+            values.insert( // hrStorageUsed
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "6"], disk_idx),
                 Value::Integer((fsstat.f_blocks - fsstat.f_bfree) as i64)
             );
+            // hrStorageAllocationFailures is unsupported
+
+            // dskTable
+            //  dskIndex  dskPath dskDevice dskMinimum dskMinPercent  dskTotal dskAvail  dskUsed
+            //  dskPercent dskPercentNode dskTotalLow dskTotalHigh dskAvailLow dskAvailHigh
+            //  dskUsedLow dskUsedHigh dskErrorFlag                           dskErrorMsg
+
+            values.insert( // dskIndex
+                OID::from_parts_and_instance(&[dsk_table_oid, "1"], disk_idx),
+                Value::Integer(disk_idx as i64)
+            );
+            values.insert( // dskPath
+                OID::from_parts_and_instance(&[dsk_table_oid, "2"], disk_idx),
+                Value::OctetString(mountpoint)
+            );
+            values.insert( // dskDevice
+                OID::from_parts_and_instance(&[dsk_table_oid, "3"], disk_idx),
+                Value::OctetString(alias.or(Some(device)).unwrap())
+            );
+            values.insert( // dskMinimum
+                OID::from_parts_and_instance(&[dsk_table_oid, "4"], disk_idx),
+                Value::Integer(0)
+            );
+            values.insert( // dskMinPercent
+                OID::from_parts_and_instance(&[dsk_table_oid, "5"], disk_idx),
+                Value::Integer(-1)
+            );
+            values.insert( // dskTotal
+                OID::from_parts_and_instance(&[dsk_table_oid, "6"], disk_idx),
+                Value::Integer( (fsstat.f_blocks * fsstat.f_frsize / 1024) as i64 )
+            );
+            values.insert( // dskAvail
+                OID::from_parts_and_instance(&[dsk_table_oid, "7"], disk_idx),
+                Value::Integer( (fsstat.f_bavail * fsstat.f_frsize / 1024) as i64 )
+            );
+
+            let f_bused = fsstat.f_blocks - fsstat.f_bfree;
+
+            values.insert( // dskUsed
+                OID::from_parts_and_instance(&[dsk_table_oid, "8"], disk_idx),
+                Value::Integer( (f_bused * fsstat.f_frsize / 1024) as i64 )
+            );
+            values.insert( // dskPercent
+                OID::from_parts_and_instance(&[dsk_table_oid, "9"], disk_idx),
+                Value::Integer( (f_bused * 100 / fsstat.f_blocks) as i64 )
+            );
+
+            if fsstat.f_files != 0 {
+                let f_fused = fsstat.f_files - fsstat.f_ffree;
+
+                values.insert(// dskPercentNode
+                    OID::from_parts_and_instance(&[dsk_table_oid, "10"], disk_idx),
+                    Value::Integer((f_fused * 100 / fsstat.f_files) as i64)
+                );
+            }
+
+            // Rest: Unsupported
 
             disk_idx += 1;
         }
