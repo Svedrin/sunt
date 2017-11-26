@@ -43,10 +43,6 @@ impl OID {
         &self.oid_vec
     }
 
-    pub fn as_string(&self) -> &String {
-        &self.oid_str
-    }
-
     pub fn is_subtree_of(&self, subtree: &OID) -> bool {
         return self.oid_str.starts_with(subtree.str());
     }

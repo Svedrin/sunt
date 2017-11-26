@@ -38,7 +38,6 @@ fn canonicalize_dm_name(devpath: PathBuf) -> Option<String> {
                             // Something else, return as-is.
                             return Some(file_name_string);
                         }
-                        break;
                     }
                 }
             }
@@ -47,11 +46,11 @@ fn canonicalize_dm_name(devpath: PathBuf) -> Option<String> {
     None
 }
 
-pub fn get_filesystems(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
-    // hrStorageTable -- or
-    // UCD-SNMP-MIB::dskTable? (or both?)
-    // both, we'll need to gather the dataz anyway, so we might as well encode it into two tables
-
+pub fn get_filesystems(
+    values: &mut BTreeMap<OID, Value>,
+    hr_storage_table_oid: &str,
+    dsk_table_oid: &str
+) {
     if let Ok(diskstats) = File::open("/proc/mounts") {
         let mut disk_idx = 1;
         let dups : &mut HashSet<u64> = &mut HashSet::new();
@@ -96,30 +95,32 @@ pub fn get_filesystems(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
             }
 
             println!("{}: avail {}, free {}, blox {}, opts {}", mountpoint, fsstat.f_bavail, fsstat.f_bfree, fsstat.f_blocks, fsstat.f_fsid);
+            // hrStorageTable
+
             values.insert(
-                OID::from_parts_and_instance(&[base_oid, "1"], disk_idx),
+                OID::from_parts_and_instance(&[hr_storage_table_oid, "1"], disk_idx),
                 Value::Integer(disk_idx as i64)
             );
             values.insert(
-                OID::from_parts_and_instance(&[base_oid, "2"], disk_idx),
+                OID::from_parts_and_instance(&[hr_storage_table_oid, "2"], disk_idx),
                 Value::Null
             );
 
             values.insert(
-                OID::from_parts_and_instance(&[base_oid, "3"], disk_idx),
+                OID::from_parts_and_instance(&[hr_storage_table_oid, "3"], disk_idx),
                 Value::OctetString(mountpoint)
             );
 
             values.insert(
-                OID::from_parts_and_instance(&[base_oid, "4"], disk_idx),
+                OID::from_parts_and_instance(&[hr_storage_table_oid, "4"], disk_idx),
                 Value::Integer(fsstat.f_frsize as i64)
             );
             values.insert(
-                OID::from_parts_and_instance(&[base_oid, "5"], disk_idx),
+                OID::from_parts_and_instance(&[hr_storage_table_oid, "5"], disk_idx),
                 Value::Integer(fsstat.f_blocks as i64)
             );
             values.insert(
-                OID::from_parts_and_instance(&[base_oid, "6"], disk_idx),
+                OID::from_parts_and_instance(&[hr_storage_table_oid, "6"], disk_idx),
                 Value::Integer((fsstat.f_blocks - fsstat.f_bfree) as i64)
             );
 
