@@ -57,7 +57,6 @@ pub fn get_interfaces(values: &mut BTreeMap<OID, Value>, if_table_oid: &str, ext
             let ifname = String::from(parts[0].trim_right_matches(":"));
             let ifsys = PathBuf::from("/sys/class/net").join(&ifname);
             let ifclass = classify_interface(&ifname);
-            println!("{} is {:?}", ifname, ifclass);
 
             match ifclass {
                 IfaceClass::Virtual => continue,
@@ -65,10 +64,6 @@ pub fn get_interfaces(values: &mut BTreeMap<OID, Value>, if_table_oid: &str, ext
             }
 
             // ifTable
-            //  ifIndex ifDescr  ifType ifMtu ifSpeed ifPhysAddress ifAdminStatus ifOperStatus
-            //  ifLastChange ifInOctets ifInUcastPkts ifInNUcastPkts ifInDiscards ifInErrors
-            //  ifInUnknownProtos ifOutOctets ifOutUcastPkts ifOutNUcastPkts ifOutDiscards
-            //  ifOutErrors ifOutQLen ifSpecific
 
             values.insert( // ifIndex
                 OID::from_parts_and_instance(&[if_table_oid, "1"], iface_idx),
@@ -150,8 +145,6 @@ pub fn get_interfaces(values: &mut BTreeMap<OID, Value>, if_table_oid: &str, ext
             // ifSpecific not supported
 
             // extended Table (no idea if it has a name)
-            // ifName 1 ... ifHCInOctets 6 ifHCInUcastPkts 7 ... ifHCOutOctets 10 ifHCOutUcastPkts 11 ...
-            // ifHighSpeed 15
 
             values.insert( // ifName
                 OID::from_parts_and_instance(&[extended_oid, "1"], iface_idx),
