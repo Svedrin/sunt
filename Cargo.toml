@@ -10,3 +10,4 @@ snmp = { git = "https://github.com/Svedrin/rust-snmp", branch = "feature/respons
 uname = "*"
 libc = "*"
 clap = "*"
+yaml-rust = "0.3"

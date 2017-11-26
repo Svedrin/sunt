@@ -12,10 +12,12 @@ extern crate error_chain;
 extern crate clap;
 extern crate uname;
 extern crate libc;
+extern crate yaml_rust;
 
 use std::collections::BTreeMap;
 use std::net::{UdpSocket,SocketAddr};
 use std::time::{Instant,Duration};
+use std::path::PathBuf;
 use clap::{Arg, App};
 use snmp::SnmpPdu;
 use snmp::pdu;
@@ -26,6 +28,8 @@ mod errors {
 
 use errors::*;
 
+mod config;
+
 mod oid;
 use oid::OID;
 
@@ -35,11 +39,21 @@ use value::Value;
 mod mib_sys;
 mod mib_disks;
 mod mib_net;
+mod mib_extend;
+
 
 fn run(matches: clap::ArgMatches) -> Result<()> {
     let port = matches.value_of("port").unwrap_or("161").parse::<u16>()
         .chain_err(|| "Port argument must be a number between 1 and 65535")?;
     let community = matches.value_of("community").unwrap_or("sunt");
+
+    let mut conf = None;
+    if let Some(confpath) = matches.value_of("extend") {
+        conf = Some(
+            config::load_conf(PathBuf::from(confpath))
+                .expect("failed to load config")
+        );
+    }
 
     let addr: SocketAddr = format!("[::]:{}", port).parse()
         .chain_err(|| "Could not parse address")?;
@@ -74,6 +88,11 @@ fn run(matches: clap::ArgMatches) -> Result<()> {
                 &mut values,
                 "1.3.6.1.2.1.2.2.1",
                 "1.3.6.1.2.1.31.1.1.1"
+            );
+            mib_extend::get_extend(
+                &mut values,
+                &conf,
+                "1.3.6.1.4.1.8072.1.3.2.3.1"
             );
             last_refresh = Some(Instant::now());
         }
@@ -176,6 +195,11 @@ fn main(){
             .long("community")
             .takes_value(true)
             .help("Community to use in responses [sunt]"))
+        .arg(Arg::with_name("extend")
+            .short("e")
+            .long("extend")
+            .takes_value(true)
+            .help("Parse config.yaml that defines extends"))
         .get_matches();
 
     if let Err(ref e) = run(matches) {

@@ -14,6 +14,7 @@ nowadays, stripped to the essentials but adding features where they make sense.
 * dskTable
 * diskIOTable
 * ifTable
+* nsExtendOutput1Table (SNMP extend)
 
 # Example queries
 
@@ -96,3 +97,52 @@ nowadays, stripped to the essentials but adding features where they make sense.
 
    Note that while this test is somewhat unfair because sunt returns fewer data,
    it appears that net-snmp is worse affected by latency.
+
+# SNMP Extend support
+
+Sunt has support for SNMP extend. To use it, create a YAML file with a set of commands like this:
+
+    extend:
+      # SNMP extend command for NTP monitoring
+      ntpq_delay:  { cmd: '/usr/local/bin/ntpwatch', args: ['delay' ] }
+      ntpq_jitter: { cmd: '/usr/local/bin/ntpwatch', args: ['jitter'] }
+      ntpq_offset: { cmd: '/usr/local/bin/ntpwatch', args: ['offset'] }
+      "true":      { cmd: '/bin/true' }
+      echo:        { cmd: '/bin/echo', args: ["testing"] }
+
+Then start sunt with the `-e` option, pointing to that yaml file. You can then query the table:
+
+    # snmptable  -v2c -c wayne 127.0.0.1 nsExtendOutput1Table
+    SNMP table: NET-SNMP-EXTEND-MIB::nsExtendOutput1Table
+
+     nsExtendOutput1Line nsExtendOutputFull nsExtendOutNumLines nsExtendResult
+                 testing            testing                   1              0
+                                                              0              0
+                   21217              21217                   1              0
+                     650                650                   1              0
+                    1580               1580                   1              0
+
+Or walk the values:
+
+    # snmpwalk  -v2c -c wayne 127.0.0.1 nsExtendOutput1Table
+    NET-SNMP-EXTEND-MIB::nsExtendOutput1Line."echo" = STRING: testing
+    NET-SNMP-EXTEND-MIB::nsExtendOutput1Line."true" = STRING:
+    NET-SNMP-EXTEND-MIB::nsExtendOutput1Line."ntpq_delay" = STRING: 21217
+    NET-SNMP-EXTEND-MIB::nsExtendOutput1Line."ntpq_jitter" = STRING: 650
+    NET-SNMP-EXTEND-MIB::nsExtendOutput1Line."ntpq_offset" = STRING: 1580
+    NET-SNMP-EXTEND-MIB::nsExtendOutputFull."echo" = STRING: testing
+    NET-SNMP-EXTEND-MIB::nsExtendOutputFull."true" = STRING:
+    NET-SNMP-EXTEND-MIB::nsExtendOutputFull."ntpq_delay" = STRING: 21217
+    NET-SNMP-EXTEND-MIB::nsExtendOutputFull."ntpq_jitter" = STRING: 650
+    NET-SNMP-EXTEND-MIB::nsExtendOutputFull."ntpq_offset" = STRING: 1580
+    NET-SNMP-EXTEND-MIB::nsExtendOutNumLines."echo" = INTEGER: 1
+    NET-SNMP-EXTEND-MIB::nsExtendOutNumLines."true" = INTEGER: 0
+    NET-SNMP-EXTEND-MIB::nsExtendOutNumLines."ntpq_delay" = INTEGER: 1
+    NET-SNMP-EXTEND-MIB::nsExtendOutNumLines."ntpq_jitter" = INTEGER: 1
+    NET-SNMP-EXTEND-MIB::nsExtendOutNumLines."ntpq_offset" = INTEGER: 1
+    NET-SNMP-EXTEND-MIB::nsExtendResult."echo" = INTEGER: 0
+    NET-SNMP-EXTEND-MIB::nsExtendResult."true" = INTEGER: 0
+    NET-SNMP-EXTEND-MIB::nsExtendResult."ntpq_delay" = INTEGER: 0
+    NET-SNMP-EXTEND-MIB::nsExtendResult."ntpq_jitter" = INTEGER: 0
+    NET-SNMP-EXTEND-MIB::nsExtendResult."ntpq_offset" = INTEGER: 0
+    SNMPv2-SMI::zeroDotZero = No more variables left in this MIB View (It is past the end of the MIB tree)

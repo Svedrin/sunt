@@ -39,6 +39,15 @@ impl OID {
         OID::from_string(format!("{}.{}", input.join("."), instance))
     }
 
+    pub fn asciify_part(input: &String) -> String {
+        // Turn a human-readable word like ntpq_delay into an asciified oid part,
+        // like "110.116.112.113.95.100.101.108.97.121"
+        input.chars()
+            .map(|x| format!("{}", x as u8))
+            .collect::<Vec<String>>()
+            .join(".")
+    }
+
     pub fn as_vec(&self) -> &Vec<u32> {
         &self.oid_vec
     }
