@@ -18,7 +18,7 @@ pub fn get_disks(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
     // diskIOIndex diskIODevice diskIONRead diskIONWritten diskIOReads diskIOWrites ...
     // ... diskIOLA1 diskIOLA5 diskIOLA15 diskIONReadX diskIONWrittenX
 
-    if let Ok(diskstats) = File::open("/tmp/diskstats") {
+    if let Ok(diskstats) = File::open("/proc/diskstats") {
         let mut disk_idx = 1;
 
         for line in BufReader::new(diskstats).lines() {
