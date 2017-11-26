@@ -17,6 +17,8 @@ nowadays, stripped to the essentials but adding features where they make sense.
 
 # Notable differences to net-snmpd
 
+* Considerably faster response
+
 * hrStorageTable:
 
     * Only actual mountpoints are included (no RAM etc).

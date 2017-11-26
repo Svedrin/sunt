@@ -247,8 +247,8 @@ pub fn get_disks(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
                 alias = canonicalize_dm_name(devpath);
             }
 
-            let reads  = parts[3].parse::<u32>().unwrap();
-            let writes = parts[4].parse::<u32>().unwrap();
+            let reads  = parts[3].parse::<u64>().unwrap();
+            let writes = parts[4].parse::<u64>().unwrap();
             let read_bytes = parts[5].parse::<u64>().unwrap() * 512;
             let wrtn_bytes = parts[6].parse::<u64>().unwrap() * 512;
 
@@ -263,11 +263,11 @@ pub fn get_disks(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
             // NRead, NWritten (old sucky 32 bit counters). I hope these conversions are correct :/
             values.insert( // diskIONRead
                 OID::from_parts_and_instance(&[base_oid,  "3"], disk_idx),
-                Value::Counter32((read_bytes & 0xFFFFFFFF) as u32)
+                Value::Counter32(read_bytes)
             );
             values.insert( // diskIONWritten
                 OID::from_parts_and_instance(&[base_oid,  "4"], disk_idx),
-                Value::Counter32((wrtn_bytes & 0xFFFFFFFF) as u32)
+                Value::Counter32(wrtn_bytes)
             );
             // reads, writes
             values.insert( // diskIOReads

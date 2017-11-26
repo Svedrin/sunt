@@ -49,7 +49,11 @@ fn run(port: u32, community: &str) -> Result<()> {
         "1.3.6.1.2.1.25.2.3.1",
         "1.3.6.1.4.1.2021.9.1"
     );
-    mib_net::get_interfaces(&mut values, "1.3.6.1.2.1.2.2.1");
+    mib_net::get_interfaces(
+        &mut values,
+        "1.3.6.1.2.1.2.2.1",
+        "1.3.6.1.2.1.31.1.1.1"
+    );
 
     let mut buf = [0 as u8; 16 * 1024];
     loop {

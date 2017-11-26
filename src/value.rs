@@ -12,7 +12,7 @@ pub enum Value<'a> {
     OctetStr(&'a str),
 
     IpAddress([u8;4]),
-    Counter32(u32),
+    Counter32(u64),
     Unsigned32(u32),
     Timeticks(u32),
     Counter64(u64),
@@ -27,7 +27,7 @@ impl<'a> Value<'a> {
             &Value::OctetString(ref string) => snmp::Value::OctetString(string.as_bytes()),
             &Value::OctetStr(str_)          => snmp::Value::OctetString(str_.as_bytes()),
             &Value::IpAddress(ip)           => snmp::Value::IpAddress(ip),
-            &Value::Counter32(u32_)         => snmp::Value::Counter32(u32_),
+            &Value::Counter32(u64_)         => snmp::Value::Counter32((u64_ & 0xFFFFFFFF) as u32),
             &Value::Unsigned32(u32_)        => snmp::Value::Unsigned32(u32_),
             &Value::Timeticks(u32_)         => snmp::Value::Timeticks(u32_),
             &Value::Counter64(u64_)         => snmp::Value::Counter64(u64_),
