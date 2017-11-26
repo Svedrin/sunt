@@ -74,9 +74,15 @@ pub fn get_disks(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
 
             values.insert(OID::from_parts_and_instance(&[base_oid,  "1"], disk_idx), Value::Integer(disk_idx as i64));
             values.insert(OID::from_parts_and_instance(&[base_oid,  "2"], disk_idx), Value::OctetString(alias.unwrap()));
-            // NRead, NWritten (old sucky 32 bit counters)
-            values.insert(OID::from_parts_and_instance(&[base_oid,  "3"], disk_idx), Value::Counter32(0));
-            values.insert(OID::from_parts_and_instance(&[base_oid,  "4"], disk_idx), Value::Counter32(0));
+            // NRead, NWritten (old sucky 32 bit counters). I hope these conversions are correct :/
+            values.insert(
+                OID::from_parts_and_instance(&[base_oid,  "3"], disk_idx),
+                Value::Counter32((read_bytes & 0xFFFFFFFF) as u32)
+            );
+            values.insert(
+                OID::from_parts_and_instance(&[base_oid,  "4"], disk_idx),
+                Value::Counter32((wrtn_bytes & 0xFFFFFFFF) as u32)
+            );
             // reads, writes
             values.insert(OID::from_parts_and_instance(&[base_oid,  "5"], disk_idx), Value::Counter32(reads));
             values.insert(OID::from_parts_and_instance(&[base_oid,  "6"], disk_idx), Value::Counter32(writes));
