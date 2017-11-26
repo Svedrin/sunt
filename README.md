@@ -17,11 +17,11 @@ nowadays, stripped to the essentials but adding features where they make sense.
 
 # Example queries
 
-    snmpwalk  -v2c -c test 127.0.0.1 .1
-    snmptable -v2c -c sunt 127.0.0.1 hrStorageTable
-    snmptable -v2c -c sunt 127.0.0.1 dskTable
-    snmptable -v2c -c sunt 127.0.0.1 diskIOTable
-    snmptable -v2c -c sunt 127.0.0.1 ifTable
+    snmpwalk     -v2c -c test 127.0.0.1 .1
+    snmptable    -v2c -c sunt 127.0.0.1 hrStorageTable
+    snmptable    -v2c -c sunt 127.0.0.1 dskTable
+    snmptable    -v2c -c sunt 127.0.0.1 diskIOTable
+    snmptable    -v2c -c sunt 127.0.0.1 ifTable
     snmpbulkwalk -v2c -c test 127.0.0.1 dskTable
     snmpbulkwalk -v2c -c derp 127.0.0.1 .1.3.6.1.2.1.31.1.1.1
 
