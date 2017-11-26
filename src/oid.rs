@@ -8,15 +8,25 @@ pub struct OID {
 
 impl OID {
     pub fn from_object_identifier(input : snmp::ObjectIdentifier) -> OID {
-        return OID { oid_str: input.to_string() };
+        OID { oid_str: input.to_string() }
     }
 
     pub fn from_parts(input: &[&str]) -> OID {
-        return OID { oid_str: input.join(".") };
+        OID { oid_str: input.join(".") }
     }
 
     pub fn from_parts_and_instance(input: &[&str], instance: u32) -> OID {
-        return OID { oid_str: format!("{}.{}", input.join("."), instance) };
+        OID { oid_str: format!("{}.{}", input.join("."), instance) }
+    }
+
+    pub fn from_vec(input: &Vec<u32>) -> OID {
+        OID {
+            oid_str: input
+                .iter()
+                .map(|i| format!("{}", i))
+                .collect::<Vec<String>>()
+                .join(".")
+        }
     }
 
     pub fn as_vec(&self) -> Vec<u32> {
