@@ -57,6 +57,16 @@ fn run(port: u32, community: &str) -> Result<()> {
 
                 for (name, val) in req.varbinds {
                     start_from_oid = OID::from_object_identifier(name);
+                    println!("Client wants start OID {}", &start_from_oid);
+
+                    // snmptable likes to query OIDs that don't exist as start OID.
+                    // We catch that by checking if the OID actually exists, and if not,
+                    // brute-forcing our way up until we find one that does.
+                    let mut start_oid_vec = start_from_oid.as_vec();
+                    while !values.contains_key(&start_from_oid) {
+                        start_oid_vec.pop();
+                        start_from_oid = OID::from_vec(&start_oid_vec);
+                    }
                     println!("Start OID is {}", &start_from_oid);
                     break;
                 }
