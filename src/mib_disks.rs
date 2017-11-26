@@ -1,18 +1,19 @@
 use std::collections::BTreeMap;
 use value::Value;
+use oid::OID;
 use std::fs;
 use std::fs::File;
 use std::io::{BufReader,BufRead};
 use std::path::PathBuf;
 
-pub fn get_filesystems(values: &mut BTreeMap<String, Value>, base_oid: &str) {
+pub fn get_filesystems(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
     // hrStorageTable -- or
     // UCD-SNMP-MIB::dskTable? (or both?)
     // both, we'll need to gather the dataz anyway, so we might as well encode it into two tables
 
 }
 
-pub fn get_disks(values: &mut BTreeMap<String, Value>, base_oid: &str) {
+pub fn get_disks(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
     // UCD-DISKIO-MIB::diskIOTable
     // diskIOIndex diskIODevice diskIONRead diskIONWritten diskIOReads diskIOWrites ...
     // ... diskIOLA1 diskIOLA5 diskIOLA15 diskIONReadX diskIONWrittenX
@@ -71,22 +72,22 @@ pub fn get_disks(values: &mut BTreeMap<String, Value>, base_oid: &str) {
             let read_bytes = parts[5].parse::<u64>().unwrap() * 512;
             let wrtn_bytes = parts[6].parse::<u64>().unwrap() * 512;
 
-            values.insert(format!("{}.01.{}", base_oid, disk_idx), Value::Integer(disk_idx));
-            values.insert(format!("{}.02.{}", base_oid, disk_idx), Value::OctetString(alias.unwrap()));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "1"], disk_idx), Value::Integer(disk_idx as i64));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "2"], disk_idx), Value::OctetString(alias.unwrap()));
             // NRead, NWritten (old sucky 32 bit counters)
-            values.insert(format!("{}.03.{}", base_oid, disk_idx), Value::Counter32(0));
-            values.insert(format!("{}.04.{}", base_oid, disk_idx), Value::Counter32(0));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "3"], disk_idx), Value::Counter32(0));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "4"], disk_idx), Value::Counter32(0));
             // reads, writes
-            values.insert(format!("{}.05.{}", base_oid, disk_idx), Value::Counter32(reads));
-            values.insert(format!("{}.06.{}", base_oid, disk_idx), Value::Counter32(writes));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "5"], disk_idx), Value::Counter32(reads));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "6"], disk_idx), Value::Counter32(writes));
             // 7, 8: ???
             // diskIOLA1, 5, 15
-            values.insert(format!("{}.09.{}", base_oid, disk_idx), Value::Integer(0));
-            values.insert(format!("{}.10.{}", base_oid, disk_idx), Value::Integer(0));
-            values.insert(format!("{}.11.{}", base_oid, disk_idx), Value::Integer(0));
+            values.insert(OID::from_parts_and_instance(&[base_oid,  "9"], disk_idx), Value::Integer(0));
+            values.insert(OID::from_parts_and_instance(&[base_oid, "10"], disk_idx), Value::Integer(0));
+            values.insert(OID::from_parts_and_instance(&[base_oid, "11"], disk_idx), Value::Integer(0));
             // NReadX, NWrittenX (new shiny 64 bit counters)
-            values.insert(format!("{}.12.{}", base_oid, disk_idx), Value::Counter64(read_bytes));
-            values.insert(format!("{}.13.{}", base_oid, disk_idx), Value::Counter64(wrtn_bytes));
+            values.insert(OID::from_parts_and_instance(&[base_oid, "12"], disk_idx), Value::Counter64(read_bytes));
+            values.insert(OID::from_parts_and_instance(&[base_oid, "13"], disk_idx), Value::Counter64(wrtn_bytes));
 
             disk_idx += 1;
         }

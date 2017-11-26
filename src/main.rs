@@ -22,6 +22,9 @@ mod errors {
 
 use errors::*;
 
+mod oid;
+use oid::OID;
+
 mod value;
 use value::Value;
 
@@ -35,7 +38,7 @@ fn run(port: u32, community: &str) -> Result<()> {
     let socket = UdpSocket::bind(addr)
         .chain_err(|| "Could not bind to socket")?;
 
-    let mut values: BTreeMap<String, Value> = BTreeMap::new();
+    let mut values: BTreeMap<OID, Value> = BTreeMap::new();
     mib_sys::get_system(&mut values, "1.3.6.1.2.1.1");
     mib_disks::get_disks(&mut values, "1.3.6.1.4.1.2021.13.15.1.1");
 
@@ -50,10 +53,11 @@ fn run(port: u32, community: &str) -> Result<()> {
                 println!("request type: {:?}", req.message_type);
                 println!("req_id:        {}", req.req_id);
 
-                let mut start_from_oid = None;
+                let mut start_from_oid = OID::from_parts(&["1"]);
 
                 for (name, val) in req.varbinds {
-                    start_from_oid = Some(name.to_string());
+                    start_from_oid = OID::from_object_identifier(name);
+                    println!("Start OID is {}", &start_from_oid);
                     break;
                 }
 
@@ -65,8 +69,8 @@ fn run(port: u32, community: &str) -> Result<()> {
 
 
 fn respond (
-    values:         &BTreeMap<String, Value>,
-    start_from_oid: Option<String>,
+    values:         &BTreeMap<OID, Value>,
+    start_from_oid: OID,
     req_id:         i32,
     client_addr:    SocketAddr,
     community:      &str,
@@ -83,24 +87,21 @@ fn respond (
     // by keeping the originals in a variable till the end of this scope.
 
     // If we don't have a start OID, start right away
-    let mut found_start = start_from_oid.is_none();
+    let mut found_start = false;
 
     let mut vals: Vec<(Vec<u32>, snmp::Value)> = Vec::new();
 
-    for (oid_str, val) in values {
-        let oid_vec = oid_str
-            .split(".")
-            .map(|i| i.parse::<u32>().unwrap())
-            .collect::<Vec<u32>>();
-
-        if !found_start && oid_str.starts_with(start_from_oid.as_ref().unwrap()) {
-            println!("Found start OID {} ?= {}", start_from_oid.as_ref().unwrap(), oid_str);
+    for (oid, val) in values {
+        if !found_start && oid.is_subtree_of(&start_from_oid) {
+            println!("Found start OID {} ?= {}", start_from_oid, oid.str());
             found_start = true;
-            continue;
+            if *oid == start_from_oid {
+                continue;
+            }
         }
 
         if found_start {
-            vals.push( (oid_vec, val.as_snmp_value()) );
+            vals.push( (oid.as_vec(), val.as_snmp_value()) );
         }
 
         if vals.len() >= 100 {

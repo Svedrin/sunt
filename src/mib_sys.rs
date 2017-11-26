@@ -1,11 +1,12 @@
 use std::collections::BTreeMap;
 use uname;
 use value::{Value,u32_from_file};
+use oid::OID;
 
-pub fn get_system(values: &mut BTreeMap<String, Value>, base_oid: &str) {
+pub fn get_system(values: &mut BTreeMap<OID, Value>, base_oid: &str) {
     if let Ok(info) = uname::uname() {
         values.insert(
-            format!("{}.{}", base_oid, "1.0"),
+            OID::from_parts(&[base_oid, "1.0"]),
             Value::OctetString(format!(
                 "{} {} {} {} {}",
                 info.sysname,
@@ -17,14 +18,14 @@ pub fn get_system(values: &mut BTreeMap<String, Value>, base_oid: &str) {
         );
 
         values.insert(
-            format!("{}.{}", base_oid, "5.0"),
+            OID::from_parts(&[base_oid, "5.0"]),
             Value::OctetString(info.nodename)
         );
     }
 
-    values.insert(format!("{}.{}", base_oid, "4.0"), Value::OctetStr("sunt v0.0.1"));
-    values.insert(format!("{}.{}", base_oid, "6.0"), Value::OctetStr("the cloud, probably"));
+    values.insert(OID::from_parts(&[base_oid, "4.0"]), Value::OctetStr("sunt v0.0.1"));
+    values.insert(OID::from_parts(&[base_oid, "6.0"]), Value::OctetStr("the cloud, probably"));
 
     let uptime = u32_from_file("/proc/uptime");
-    values.insert(format!("{}.{}", base_oid, "3.0"), Value::Timeticks(uptime));
+    values.insert(OID::from_parts(&[base_oid, "3.0"]), Value::Timeticks(uptime));
 }
