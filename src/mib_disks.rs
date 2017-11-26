@@ -134,10 +134,7 @@ pub fn get_filesystems(
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "1"], disk_idx),
                 Value::Integer(disk_idx as i64)
             );
-            values.insert( // hrStorageType
-                OID::from_parts_and_instance(&[hr_storage_table_oid, "2"], disk_idx),
-                Value::Null
-            );
+            // hrStorageType not supported
             values.insert( // hrStorageDescr
                 OID::from_parts_and_instance(&[hr_storage_table_oid, "3"], disk_idx),
                 Value::OctetString(mountpoint.to_owned())
