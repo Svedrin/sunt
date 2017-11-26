@@ -26,6 +26,22 @@ nowadays, stripped to the essentials but adding features where they make sense.
     snmpbulkwalk -v2c -c test 127.0.0.1 dskTable
     snmpbulkwalk -v2c -c derp 127.0.0.1 .1.3.6.1.2.1.31.1.1.1
 
+.
+
+    # snmptable  -v2c -c sunt 192.168.0.1 dskTable | cut -c -140
+    SNMP table: UCD-SNMP-MIB::dskTable
+
+     dskIndex                 dskPath               dskDevice dskMinimum dskMinPercent  dskTotal  dskAvail   dskUsed dskPercent dskPercentNode
+            1                       /        /dev/vghive/root          0            -1  20511356  11301592   8144804         39             16
+            2                   /data                /dev/md0          0            -1 961300936 333643156 627657780         65              0
+            3            /var/lib/lxc     /dev/vghive/var-lxc          0            -1  20961280  16288304   4672976         22              0
+            4                /var/log     /dev/vghive/var-log          0            -1  10483712   9686808    719080          6              0
+            5       /media/prometheus  /dev/vghive/prometheus          0            -1  10475520   3404028   7071492         67              0
+            6 /var/lib/libvirt/images /dev/vghive/var-libvirt          0            -1  26204160   6710120  19494040         74              0
+            7              /media/bkp                /dev/bkp          0            -1  15348720  13136192   1409816          9              4
+
+
+
 # Notable differences to net-snmpd
 
 * No write access whatsoever
