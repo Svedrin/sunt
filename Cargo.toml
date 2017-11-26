@@ -8,3 +8,4 @@ error-chain = "*"
 mio = "*"
 snmp = { git = "https://github.com/Svedrin/rust-snmp", branch = "feature/response-pdus" }
 uname = "*"
+libc = "*"

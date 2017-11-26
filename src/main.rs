@@ -10,6 +10,7 @@ extern crate snmp;
 #[macro_use]
 extern crate error_chain;
 extern crate uname;
+extern crate libc;
 
 use std::collections::BTreeMap;
 use std::net::{UdpSocket,SocketAddr};
@@ -42,6 +43,7 @@ fn run(port: u32, community: &str) -> Result<()> {
 
     mib_sys::get_system(&mut values, "1.3.6.1.2.1.1");
     mib_disks::get_disks(&mut values, "1.3.6.1.4.1.2021.13.15.1.1");
+    mib_disks::get_filesystems(&mut values, "1.3.6.1.2.1.25.2.3.1");
 
     let mut buf = [0 as u8; 16 * 1024];
     loop {
