@@ -156,7 +156,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "snmp"
 version = "0.2.2"
-source = "git+https://github.com/Svedrin/rust-snmp?branch=feature/response-pdus#794d7c99e530ea318e3f4cf065a50260f2973910"
+source = "git+https://github.com/Svedrin/rust-snmp?branch=feature/response-pdus#f77670330f7f05397fbc80d64fb160be94a79b5e"
 
 [[package]]
 name = "sunt"

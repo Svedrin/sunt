@@ -39,6 +39,7 @@ fn run(port: u32, community: &str) -> Result<()> {
         .chain_err(|| "Could not bind to socket")?;
 
     let mut values: BTreeMap<OID, Value> = BTreeMap::new();
+
     mib_sys::get_system(&mut values, "1.3.6.1.2.1.1");
     mib_disks::get_disks(&mut values, "1.3.6.1.4.1.2021.13.15.1.1");
 
@@ -61,8 +62,8 @@ fn run(port: u32, community: &str) -> Result<()> {
 
                     // snmptable likes to query OIDs that don't exist as start OID.
                     // We catch that by checking if the OID actually exists, and if not,
-                    // brute-forcing our way up until we find one that does.
-                    let mut start_oid_vec = start_from_oid.as_vec();
+                    // brute-forcing our way up the tree until we find one that does.
+                    let mut start_oid_vec = start_from_oid.as_vec().to_owned();
                     while !values.contains_key(&start_from_oid) {
                         start_oid_vec.pop();
                         start_from_oid = OID::from_vec(&start_oid_vec);
@@ -86,24 +87,14 @@ fn respond (
     community:      &str,
     socket:         &UdpSocket
 ) -> Result<()> {
+
     let mut outbuf = pdu::Buf::default();
-
-    // Convert stuff into the correct types. Actually I'm pretty sure this shouldn't be
-    // so complicated...
-    // First, convert stringly-typed OIDs to lists-of-numbers,
-    // then   convert the lists-of-numbers to refs-to-lists-of-numbers which is what
-    //        build_response expects,
-    // but do it in such a way that the values the refs point *to* live long enough
-    // by keeping the originals in a variable till the end of this scope.
-
-    // If we don't have a start OID, start right away
     let mut found_start = false;
-
-    let mut vals: Vec<(Vec<u32>, snmp::Value)> = Vec::new();
+    let mut vals: Vec<(&[u32], snmp::Value)> = Vec::new();
 
     for (oid, val) in values {
         if !found_start && oid.is_subtree_of(&start_from_oid) {
-            println!("Found start OID {} ?= {}", start_from_oid, oid.str());
+            println!("Found start OID {} => {}", start_from_oid, oid.str());
             found_start = true;
             if *oid == start_from_oid {
                 continue;
@@ -111,7 +102,7 @@ fn respond (
         }
 
         if found_start {
-            vals.push( (oid.as_vec(), val.as_snmp_value()) );
+            vals.push( (&oid.as_vec()[..], val.as_snmp_value()) );
         }
 
         if vals.len() >= 100 {
@@ -120,15 +111,10 @@ fn respond (
     }
 
     if !vals.is_empty() {
-        let mut refd_vals = vals
-            .iter()
-            .map(|&(ref oid, ref val)| (&oid[..], val))
-            .collect::<Vec<(&[u32], &snmp::Value)>>();
-
         pdu::build_response(
             &community.as_bytes(),
             req_id,
-            &refd_vals[..],
+            &vals[..],
             &mut outbuf
         );
     }
@@ -136,7 +122,7 @@ fn respond (
         pdu::build_response(
             &community.as_bytes(),
             req_id,
-            &[(&[0, 0], &snmp::Value::EndOfMibView)],
+            &[(&[0, 0], snmp::Value::EndOfMibView)],
             &mut outbuf
         );
     }
