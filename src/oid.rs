@@ -3,37 +3,48 @@ use std::cmp::Ordering;
 use std::fmt;
 
 pub struct OID {
-    oid_str: String
+    oid_str: String,
+    oid_vec: Vec<u32>,
 }
 
 impl OID {
-    pub fn from_object_identifier(input : snmp::ObjectIdentifier) -> OID {
-        OID { oid_str: input.to_string() }
-    }
-
-    pub fn from_parts(input: &[&str]) -> OID {
-        OID { oid_str: input.join(".") }
-    }
-
-    pub fn from_parts_and_instance(input: &[&str], instance: u32) -> OID {
-        OID { oid_str: format!("{}.{}", input.join("."), instance) }
+    pub fn from_string(input: String) -> OID {
+        let oid_str = input.to_owned();
+        let oid_vec = oid_str
+            .split(".")
+            .map(|i| i.parse::<u32>().unwrap())
+            .collect::<Vec<u32>>();
+        OID { oid_str: oid_str, oid_vec: oid_vec }
     }
 
     pub fn from_vec(input: &Vec<u32>) -> OID {
-        OID {
-            oid_str: input
-                .iter()
-                .map(|i| format!("{}", i))
-                .collect::<Vec<String>>()
-                .join(".")
-        }
+        let oid_str = input
+            .iter()
+            .map(|i| format!("{}", i))
+            .collect::<Vec<String>>()
+            .join(".");
+        let oid_vec = input.to_owned();
+        OID { oid_str: oid_str, oid_vec: oid_vec }
     }
 
-    pub fn as_vec(&self) -> Vec<u32> {
-        self.oid_str
-            .split(".")
-            .map(|i| i.parse::<u32>().unwrap())
-            .collect::<Vec<u32>>()
+    pub fn from_object_identifier(input : snmp::ObjectIdentifier) -> OID {
+        OID::from_string(input.to_string())
+    }
+
+    pub fn from_parts(input: &[&str]) -> OID {
+        OID::from_string(input.join("."))
+    }
+
+    pub fn from_parts_and_instance(input: &[&str], instance: u32) -> OID {
+        OID::from_string(format!("{}.{}", input.join("."), instance))
+    }
+
+    pub fn as_vec(&self) -> &Vec<u32> {
+        &self.oid_vec
+    }
+
+    pub fn as_string(&self) -> &String {
+        &self.oid_str
     }
 
     pub fn is_subtree_of(&self, subtree: &OID) -> bool {
