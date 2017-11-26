@@ -95,8 +95,7 @@ nowadays, stripped to the essentials but adding features where they make sense.
           (start at .1)  |   user    0m0,021s     |  user    0m0,620s
                          |   sys     0m0,007s     |  sys     0m0,253s
 
-   Note that while this test is somewhat unfair because sunt returns fewer data,
-   it appears that net-snmp is worse affected by latency.
+   Note that this test is somewhat unfair because sunt returns way fewer data.
 
 # SNMP Extend support
 
