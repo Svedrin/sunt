@@ -38,7 +38,7 @@ pub fn get_extend(values: &mut BTreeMap<OID, Value>, conf: &Option<Yaml>, extend
         );
         values.insert( // nsExtendOutputFull = 2
             OID::from_parts(&[extend_oid, "2", &lenpart, &namepart]),
-            Value::OctetString(String::from(output_string.trim_right()).to_owned())
+            Value::OctetString(String::from(output_string.trim_end()).to_owned())
         );
         values.insert( // nsExtendOutNumLines = 3
             OID::from_parts(&[extend_oid, "3", &lenpart, &namepart]),
