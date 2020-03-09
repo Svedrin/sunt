@@ -54,7 +54,7 @@ pub fn get_interfaces(values: &mut BTreeMap<OID, Value>, if_table_oid: &str, ext
             // Rx bytes packets errs drop fifo frame compressed multicast
             // Tx bytes packets errs drop fifo colls carrier compressed
 
-            let ifname = String::from(parts[0].trim_right_matches(":"));
+            let ifname = String::from(parts[0].trim_end_matches(":"));
             let ifsys = PathBuf::from("/sys/class/net").join(&ifname);
             let ifclass = classify_interface(&ifname);
 
