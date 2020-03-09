@@ -12,6 +12,7 @@ extern crate error_chain;
 extern crate clap;
 extern crate uname;
 extern crate libc;
+extern crate procps_sys;
 extern crate yaml_rust;
 
 use std::collections::BTreeMap;
@@ -39,6 +40,7 @@ use value::Value;
 mod mib_sys;
 mod mib_disks;
 mod mib_net;
+mod mib_procs;
 mod mib_extend;
 
 
@@ -88,6 +90,10 @@ fn run(matches: clap::ArgMatches) -> Result<()> {
                 &mut values,
                 "1.3.6.1.2.1.2.2.1",
                 "1.3.6.1.2.1.31.1.1.1"
+            );
+            mib_procs::get_processes(
+                &mut values,
+                "1.3.6.1.2.1.25.4.2.1"
             );
             mib_extend::get_extend(
                 &mut values,
@@ -151,7 +157,7 @@ fn respond (
             vals.push( (&oid.as_vec()[..], val.as_snmp_value()) );
         }
 
-        if vals.len() >= 100 {
+        if vals.len() >= 50 {
             break
         }
     }
