@@ -6,9 +6,10 @@ steps:
 - name: build for Linux
   image: rust:latest
   commands:
+  - apt-get update && apt-get install libprocps-dev
   - cargo build --release
 ---
 kind: signature
-hmac: 4b9b8dc348d4d694758245c4964d59fe30af2334028e84f9be75a4e9b9975439
+hmac: 8cf10f7d07bef8b089c0f56638dccfaeef3a98e8ca11a27a411a2a8554f4bee0
 
 ...
